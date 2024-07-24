@@ -1,0 +1,12 @@
+{"isConfigured": true,
+  "isBoardActive": true,
+  "numOfSliders": 4,
+  "COMPort": "COM5",
+  "baudRate": 115200,
+  "sliders": {
+    "slider1": "main",
+    "slider2": [],
+    "slider3": [],
+    "slider4": []
+  }
+}
