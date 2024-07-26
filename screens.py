@@ -11,7 +11,7 @@ from customtkinter import (CTkFrame,
 from time import sleep
 from threading import Thread
 from serial.tools.list_ports import comports
-from config import configuration, saveConfig
+from config import configuration, saveConfig, currentVals
 
 projectLowerFont = ("Roboto", 20)
 projectUpperFont = ("Roboto", 24)
@@ -96,6 +96,8 @@ class MenuFrame(CTkFrame):
             self.errorMessage.configure(text="Please enter a valid Baud Rate")
             self.isFetching = False
             return
+        currentVals.backgroundService = False
+        sleep(.05)
         try:
             serialPort = serial.Serial(comport, baudRate, timeout=1)
             serialPort.readline()
@@ -105,6 +107,8 @@ class MenuFrame(CTkFrame):
             if not data.startswith("(") and not data.endswith(")"):
                 self.errorMessage.configure(text="Please check if valid configuration has been entered")
                 self.isFetching = False
+                currentVals.backgroundService = True
+                serialPort.close()
                 return
 
             data = data.removeprefix("(")
@@ -114,12 +118,16 @@ class MenuFrame(CTkFrame):
             if sliderNums == 0:
                 self.errorMessage.configure(text="No Sliders Detected")
                 self.isFetching = False
+                currentVals.backgroundService = True
+                serialPort.close()
                 return
             inputField = CTkInputDialog(
                 text=f'{sliderNums} slider(s) detected\nType "confirm" to override current configuration')
             confirmChange = inputField.get_input()
             if confirmChange is None or not confirmChange.lower() == "confirm":
                 self.isFetching = False
+                currentVals.backgroundService = True
+                serialPort.close()
                 return
             sliders = {"slider1": "main"}
             for i in range(sliderNums - 1):
@@ -132,9 +140,12 @@ class MenuFrame(CTkFrame):
             configuration.isBoardActive = True
             configuration.sliders = sliders
             saveConfig()
+            serialPort.close()
         except Exception as e:
+
             self.errorMessage.configure(text="Board Not Detected")
             print(str(e))
+        currentVals.backgroundService = True
         self.isFetching = False
 
 

@@ -2,14 +2,15 @@ import os
 import json
 from pydantic import BaseModel
 
-
+class CurrentVals(BaseModel):
+    sliderVals:list=[]
+    backgroundService:bool=True
 class Configuration(BaseModel):
     isConfigured: bool = False
     isBoardActive: bool = False
     numOfSliders: int = 0
     COMPort: str = "COM5"
     baudRate: int = 115200
-    sliderVals:list=[]
     sliders: dict = {}
 
 
@@ -30,3 +31,5 @@ def saveConfig():
 
 
 configuration = loadConfig()
+currentVals = CurrentVals()
+

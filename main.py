@@ -1,9 +1,8 @@
-import os
 import customtkinter
-from threading import Thread
 from screens import *
 from trayIcons import TrayIcons
-from config import configuration
+from backgroundTask import BackgroundTask
+from config import configuration, currentVals
 
 root = customtkinter.CTk()
 root.geometry('1000x700')
@@ -26,9 +25,9 @@ def changeFrames(currentScreen, newScreen):
     frames[newScreen].pack()
 
 
-
-
 trayIcons = TrayIcons()
+backgroundTaskHandler = BackgroundTask()
+
 headerFrame = HeaderFrame(root)
 menuFrame = MenuFrame(root)
 mainFrame = MainFrame(root)
@@ -37,4 +36,17 @@ mainFrame.pack()
 setDependencies()
 
 Thread(target=trayIcons.start).start()
+if configuration.isConfigured:
+    try:
+        backgroundTaskHandler.openSerialPort()
+        backgroundTaskHandler.start()
+    except Exception as e:
+        pass
+
+
+def sd():
+    print(currentVals.sliderVals)
+    root.after(200, sd)
+
+root.after(200, sd)
 root.mainloop()
