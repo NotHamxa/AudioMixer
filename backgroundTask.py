@@ -29,6 +29,7 @@ class BackgroundTask:
                 break
             if not configuration.isConfigured:
                 break
+
             if self.serialPort is None:
                 try:
                     self.openSerialPort()
@@ -43,7 +44,7 @@ class BackgroundTask:
                         configuration.isConfigured = False
                         break
                     configuration.isBoardActive = True
-                except Exception as e:
+                except serial.serialutil.SerialException:
                     configuration.isBoardActive = False
                     break
 

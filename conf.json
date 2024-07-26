@@ -1,5 +1,5 @@
 {"isConfigured": true,
-  "isBoardActive": true,
+  "isBoardActive": false,
   "numOfSliders": 4,
   "COMPort": "COM5",
   "baudRate": 115200,
