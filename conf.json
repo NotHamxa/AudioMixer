@@ -5,8 +5,8 @@
   "baudRate": 115200,
   "sliders": {
     "slider1": "main",
-    "slider2": [],
-    "slider3": [],
+    "slider2": ["discord.exe"],
+    "slider3": ["valorant.exe","overwatch.exe"],
     "slider4": []
   }
 }

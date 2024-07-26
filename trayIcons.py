@@ -2,7 +2,7 @@ import pystray
 from images import getIconImage
 
 
-class TrayIcons():
+class TrayIcons:
     def __init__(self):
         self.trayIcons = pystray.Icon("Audio Mixer", getIconImage(), menu=pystray.Menu(
             pystray.MenuItem("Open Window", self.trayIconHandler),

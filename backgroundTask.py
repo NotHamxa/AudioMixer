@@ -1,68 +1,73 @@
 import serial
-from time import sleep,time
+from time import sleep, time
 from config import configuration, currentVals
 from threading import Thread
-class BackgroundTask():
+
+
+class BackgroundTask:
     def __init__(self):
         self.serialPort = None
         self.prevState = True
         self.badReads = []
+
     def freeSerialPort(self):
         self.serialPort.close()
+        self.serialPort = None
+
     def openSerialPort(self):
-        self.serialPort = serial.Serial(configuration.COMPort,configuration.baudRate,timeout=1)
+        self.serialPort = serial.Serial(configuration.COMPort, configuration.baudRate, timeout=1)
+
     def start(self):
         thread = Thread(target=self.backgroundTask)
         thread.start()
+
     def backgroundTask(self):
-        if self.prevState!=currentVals.backgroundService:
-            try:
-                if not currentVals.backgroundService:
-                    self.freeSerialPort()
-                else:
-                    self.openSerialPort()
-            except Exception as e:
-                configuration.isBoardActive=False
-                print(str(e))
-        if currentVals.backgroundService:
-            if not configuration.isBoardActive and configuration.isConfigured:
+        for i in range(1):
+            if not currentVals.backgroundService and self.serialPort is not None:
+                self.freeSerialPort()
+            if not currentVals.backgroundService:
+                break
+            if not configuration.isConfigured:
+                break
+            if self.serialPort is None:
                 try:
                     self.openSerialPort()
                     self.serialPort.flush()
                     data = self.serialPort.read_until(b"\n").rstrip(b"\r\n").decode("utf-8")
                     if not data.startswith("(") and not data.endswith(")"):
-                        raise Exception
-                    data = data.replace("(","")
-                    data = data.replace(")","")
-                    if len(data.split('-'))!=configuration.numOfSliders:
+                        configuration.isBoardActive = False
+                        break
+                    data = data.replace("(", "")
+                    data = data.replace(")", "")
+                    if len(data.split('-')) != configuration.numOfSliders:
                         configuration.isConfigured = False
-                        raise Exception
+                        break
                     configuration.isBoardActive = True
                 except Exception as e:
-                    print(str(e))
-            if configuration.isConfigured and configuration.isBoardActive:
+                    configuration.isBoardActive = False
+                    break
+
+            if configuration.isBoardActive:
                 try:
                     self.serialPort.flush()
                     data = self.serialPort.read_until(b"\n").rstrip(b"\r\n").decode("utf-8")
                     print(data)
                     if not data.startswith("(") and not data.endswith(")"):
-                        self.badReads.append(int(time()+10))
-                        self.badReads = [last10 for last10 in self.badReads if last10>=time()]
-                        if len(self.badReads)>=10:
+                        self.badReads.append(int(time() + 10))
+                        self.badReads = [last10 for last10 in self.badReads if last10 >= time()]
+                        if len(self.badReads) >= 10:
                             configuration.isBoardActive = False
-                    data = data.replace("(","")
-                    data = data.replace(")","")
-                    if len(data.split('-'))!=configuration.numOfSliders:
+                            break
+                    data = data.replace("(", "")
+                    data = data.replace(")", "")
+                    if len(data.split('-')) != configuration.numOfSliders:
                         configuration.isConfigured = False
-                        raise Exception
-                    print(data)
+                        break
                     currentVals.sliderVals = data.split('-')
 
                 except Exception as e:
                     configuration.isBoardActive = False
-                    print(str(e))
-        print(configuration.isBoardActive,configuration.isConfigured)
+        print(configuration.isBoardActive, configuration.isConfigured)
         sleep(.03)
         thread = Thread(target=self.backgroundTask)
         thread.start()
-
