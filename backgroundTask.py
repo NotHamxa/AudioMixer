@@ -10,6 +10,8 @@ class BackgroundTask:
         self.prevState = True
         self.badReads = []
 
+        self.startReadChances = 0
+
     def freeSerialPort(self):
         self.serialPort.close()
         self.serialPort = None
@@ -29,8 +31,10 @@ class BackgroundTask:
                 break
             if not configuration.isConfigured:
                 break
-
             if self.serialPort is None:
+                print("serial port not open")
+            if self.serialPort is None or not configuration.isBoardActive:
+                print("tryinn shi")
                 try:
                     self.openSerialPort()
                     self.serialPort.flush()
@@ -41,10 +45,19 @@ class BackgroundTask:
                     data = data.replace("(", "")
                     data = data.replace(")", "")
                     if len(data.split('-')) != configuration.numOfSliders:
-                        configuration.isConfigured = False
-                        break
+                        self.startReadChances += 1
+
+                        if self.startReadChances == 10:
+                            configuration.isBoardActive = False
+                            self.startReadChances = 0
+                            break
+                        sleep(.03)
+                        self.backgroundTask()
+                        return
+                    self.startReadChances = 0
                     configuration.isBoardActive = True
-                except serial.serialutil.SerialException:
+                except serial.serialutil.SerialException as e:
+                    print(e)
                     configuration.isBoardActive = False
                     break
 
@@ -58,17 +71,26 @@ class BackgroundTask:
                         self.badReads = [last10 for last10 in self.badReads if last10 >= time()]
                         if len(self.badReads) >= 10:
                             configuration.isBoardActive = False
+                            print("wrong n of sliders")
                             break
                     data = data.replace("(", "")
                     data = data.replace(")", "")
                     if len(data.split('-')) != configuration.numOfSliders:
-                        configuration.isConfigured = False
-                        break
+                        self.startReadChances += 1
+
+                        if self.startReadChances == 10:
+                            configuration.isBoardActive = False
+                            break
+                        sleep(.03)
+                        self.backgroundTask()
+                        return
+                    self.startReadChances = 0
                     currentVals.sliderVals = data.split('-')
 
                 except Exception as e:
+                    print(e)
                     configuration.isBoardActive = False
-        print(configuration.isBoardActive, configuration.isConfigured)
+        print(configuration.isBoardActive, configuration.isConfigured,currentVals.sliderVals)
         sleep(.03)
         thread = Thread(target=self.backgroundTask)
         thread.start()

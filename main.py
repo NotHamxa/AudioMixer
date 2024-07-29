@@ -38,7 +38,6 @@ setDependencies()
 Thread(target=trayIcons.start).start()
 if configuration.isConfigured:
     try:
-        backgroundTaskHandler.openSerialPort()
         backgroundTaskHandler.start()
     except Exception as e:
         pass
