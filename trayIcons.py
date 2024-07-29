@@ -1,4 +1,5 @@
 import pystray
+import threading
 from images import getIconImage
 from config import currentVals
 
@@ -11,7 +12,7 @@ class TrayIcons:
         self.root = None
 
     def start(self):
-        self.trayIcons.run()
+        threading.Thread(target=self.trayIcons.run).start()
 
     def trayIconHandler(self, icon, item):
         if str(item) == "Exit":

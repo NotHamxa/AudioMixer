@@ -40,7 +40,7 @@ headerFrame.pack()
 mainFrame.pack()
 setDependencies()
 
-Thread(target=trayIcons.start).start()
+trayIcons.start()
 backgroundTaskHandler.start()
 
 

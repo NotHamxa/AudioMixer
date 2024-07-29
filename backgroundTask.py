@@ -132,7 +132,6 @@ class BackgroundTask:
                             else:
                                 break
                     currentVals.sliderVals = data.split('-')
-                    self.setVolume()
                 except serial.serialutil.SerialException as e:
                     print(e)
                     self.serialPort = None
@@ -145,9 +144,3 @@ class BackgroundTask:
         sleep(.03)
         thread = Thread(target=self.backgroundTask)
         thread.start()
-
-    def setVolume(self):
-        devices = AudioUtilities.GetSpeakers()
-        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-        volume = cast(interface,POINTER(IAudioEndpointVolume))
-        volume.Set
