@@ -5,6 +5,7 @@ from pydantic import BaseModel
 class CurrentVals(BaseModel):
     sliderVals:list=[]
     backgroundService:bool=True
+    isAppRunning:bool=True
 class Configuration(BaseModel):
     isConfigured: bool = False
     isBoardActive: bool = False

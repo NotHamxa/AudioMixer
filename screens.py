@@ -23,23 +23,34 @@ class HeaderFrame(CTkFrame):
         super().__init__(root)
         self.changeFrame = None
         self.menuActive = False
-        menuFrame = CTkFrame(self, fg_color="transparent")
-        titleFrame = CTkFrame(self, fg_color="transparent")
-        menuButton = CTkButton(menuFrame, text="☰", font=projectUpperFont, fg_color="transparent",
+        self.menuIconToggled = False
+        self.configureSliderFrame = None
+        self.menuFrame = CTkFrame(self, fg_color="transparent")
+        self.titleFrame = CTkFrame(self, fg_color="transparent")
+        self.menuButton = CTkButton(self.menuFrame, text="☰", font=projectUpperFont, fg_color="transparent",
                                command=self.toggleMenu)
-        mainTitle = CTkLabel(titleFrame, text="", font=projectUpperFont)
-        menuButton.pack()
-        mainTitle.pack()
-        menuFrame.grid(row=0, column=0)
-        titleFrame.grid(row=0, column=1, padx=(460, 400))
-
-    def toggleMenu(self):
-        if self.menuActive:
-            self.changeFrame("menuFrame", "mainFrame")
+        self.mainTitle = CTkLabel(self.titleFrame, text="", font=projectUpperFont)
+        self.menuButton.pack()
+        self.mainTitle.pack()
+        self.menuFrame.grid(row=0, column=0)
+        self.titleFrame.grid(row=0, column=1, padx=(460, 400))
+        self.after(200,self.toggleMenuIcon)
+    def toggleMenuIcon(self):
+        self.menuIconToggled = True if self.configureSliderFrame.winfo_ismapped() else False
+        if self.menuIconToggled:
+            self.menuButton.configure(text="<",require_redraw=True)
         else:
-            self.changeFrame("mainFrame", "menuFrame")
-        self.menuActive = not self.menuActive
-
+            self.menuButton.configure(text="☰",require_redraw=True)
+        self.after(200,self.toggleMenuIcon)
+    def toggleMenu(self):
+        if not self.menuIconToggled:
+            if self.menuActive:
+                self.changeFrame("menuFrame", "mainFrame")
+            else:
+                self.changeFrame("mainFrame", "menuFrame")
+            self.menuActive = not self.menuActive
+        else:
+            self.changeFrame("configureSliderFrame","mainFrame")
 
 class MenuFrame(CTkFrame):
     def __init__(self, root):
@@ -152,7 +163,8 @@ class MenuFrame(CTkFrame):
 class MainFrame(CTkFrame):
     def __init__(self, root):
         super().__init__(root, fg_color="transparent")
-
+        self.changeFrame = None
+        self.configureSliderFrame = None
         self.errorMessageLabel = CTkLabel(self, text="", font=projectUpperFont, text_color="red")
         self.drawSliders()
 
@@ -167,19 +179,80 @@ class MainFrame(CTkFrame):
             self.errorMessageLabel.configure(text="Board not connected")
             self.errorMessageLabel.pack()
             return
-        for i in range(configuration.numOfSliders):
-            slider = VerticalSlider(self)
-            slider.grid(column=i, row=0, padx=50)
+        for index in range(configuration.numOfSliders):
+            slider = VerticalSlider(self, index,self.changeFrame,self.configureSliderFrame )
+            slider.grid(column=index, row=0, padx=50)
 
 
 class VerticalSlider(CTkFrame):
-    def __init__(self, root):
+    def __init__(self, root, index, changeFrame, configureSliderFrame):
         super().__init__(root, fg_color="transparent")
-        barTitle = CTkLabel(self, text="Slider 1", font=projectUpperFont)
-        barTitle.grid(row=0, column=0, pady=(0, 20))
-        progressBar = CTkProgressBar(self, orientation="vertical", width=40, height=350)
-        progressBar.grid(row=1, column=0)
-
+        self.index = index
+        self.changeFrame = changeFrame
+        self.configureSliderFrame = configureSliderFrame
+        self.barTitle = CTkLabel(self, text=f"Slider {index + 1}", font=projectUpperFont)
+        self.barTitle.grid(row=0, column=0, pady=(0, 20))
+        self.progressBar = CTkProgressBar(self, orientation="vertical", width=40, height=350)
+        self.progressBar.grid(row=1, column=0)
+        if self.index == 0:
+            self.masterLabel = CTkLabel(self, text="Master Volume", font=projectUpperFont)
+            self.masterLabel.grid(column=0, row=2, pady=10)
+        else:
+            self.configureButton = CTkButton(self, text="Configure", font=projectUpperFont,command=self.openConfigurationScreen)
+            self.configureButton.grid(column=0, row=2, pady=10)
+        self.after(30, self.updateSliderInfo)
+    def openConfigurationScreen(self):
+        self.configureSliderFrame.resetCurrentApplications(self.index)
+        self.changeFrame("mainFrame","configureSliderFrame")
     def updateSliderInfo(self):
+
         if not configuration.isConfigured or not configuration.isBoardActive:
             return
+        try:
+            self.progressBar.set(int(currentVals.sliderVals[self.index]) / 100)
+        except Exception as e:
+            print(e)
+        self.after(30, self.updateSliderInfo)
+
+class ConfigureSliderFrame(CTkFrame):
+    def __init__(self, root):
+        super().__init__(root)
+        self.configureTitle = CTkLabel(self, text="Configure Slider Applications", font=projectUpperFont)
+        self.configureTitle.pack(pady=5)
+        self.index = 0
+        self.currentApplications = []
+        self.currentApplicationsLabel = CTkLabel(self, text="", font=projectLowerFont)
+        self.currentApplicationsLabel.pack(pady=5)
+        self.addApplicationLabel = CTkLabel(self, text="Add New Application", font=projectUpperFont)
+        self.addApplicationLabel.pack(pady=5)
+        self.addApplicationFrame = CTkFrame(self,fg_color="transparent")
+        self.addApplicationEntry = CTkEntry(self.addApplicationFrame, placeholder_text="Application Name", font=projectLowerFont)
+        self.addApplicationEntry.grid(pady=5, row=1, column=0,padx=5)
+        self.addApplicationButton = CTkButton(self.addApplicationFrame, text="+", font=projectUpperFont, command=self.addNewApplication)
+        self.addApplicationButton.grid(pady=5,row=1,column=1,padx=5)
+        self.addApplicationFrame.pack(pady=5)
+
+    def resetCurrentApplications(self, index):
+        self.index = index
+        self.currentApplications = configuration.sliders[f'slider{index + 1}']
+        if not self.currentApplications:
+            text = "No Applications Are Configured"
+        else:
+            text = '\n'.join(self.currentApplications)
+
+        self.currentApplicationsLabel.configure(text=text, require_redraw=True)
+
+    def addNewApplication(self):
+        applicationName = self.addApplicationEntry.get()
+        if applicationName == "":
+            return
+        applicationName+=".exe"
+        for slider in configuration.sliders:
+            for appName in configuration.sliders[slider]:
+                if applicationName == appName:
+                    return
+        self.currentApplications.append(applicationName)
+        configuration.sliders[f'slider{self.index+1}'] = self.currentApplications
+        saveConfig()
+        self.resetCurrentApplications(self.index)
+        self.addApplicationEntry.delete(0,len(applicationName))

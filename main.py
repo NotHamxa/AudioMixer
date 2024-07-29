@@ -15,12 +15,16 @@ root.protocol('WM_DELETE_WINDOW', root.withdraw)
 def setDependencies():
     trayIcons.root = root
     headerFrame.changeFrame = changeFrames
+    headerFrame.configureSliderFrame = configureSliderFrame
+    mainFrame.changeFrame = changeFrames
+    mainFrame.configureSliderFrame = configureSliderFrame
     menuFrame.redrawSliders = mainFrame.drawSliders
-
+    backgroundTaskHandler.redrawSliders = mainFrame.drawSliders
 
 def changeFrames(currentScreen, newScreen):
     frames = {"menuFrame": menuFrame,
-              "mainFrame": mainFrame, }
+              "mainFrame": mainFrame,
+              "configureSliderFrame":configureSliderFrame}
     frames[currentScreen].forget()
     frames[newScreen].pack()
 
@@ -31,21 +35,13 @@ backgroundTaskHandler = BackgroundTask()
 headerFrame = HeaderFrame(root)
 menuFrame = MenuFrame(root)
 mainFrame = MainFrame(root)
+configureSliderFrame = ConfigureSliderFrame(root)
 headerFrame.pack()
 mainFrame.pack()
 setDependencies()
 
 Thread(target=trayIcons.start).start()
-if configuration.isConfigured:
-    try:
-        backgroundTaskHandler.start()
-    except Exception as e:
-        pass
+backgroundTaskHandler.start()
 
 
-def sd():
-    print(currentVals.sliderVals)
-    root.after(200, sd)
-
-root.after(200, sd)
 root.mainloop()

@@ -1,6 +1,6 @@
 import pystray
 from images import getIconImage
-
+from config import currentVals
 
 class TrayIcons:
     def __init__(self):
@@ -16,6 +16,7 @@ class TrayIcons:
     def trayIconHandler(self, icon, item):
         if str(item) == "Exit":
             self.trayIcons.stop()
+            currentVals.isAppRunning = False
             self.root.quit()
         elif str(item) == "Open Window":
             print(self.root.state())

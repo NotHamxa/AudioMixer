@@ -1,12 +1,1 @@
-{"isConfigured": true,
-  "isBoardActive": false,
-  "numOfSliders": 4,
-  "COMPort": "COM5",
-  "baudRate": 115200,
-  "sliders": {
-    "slider1": "main",
-    "slider2": ["discord.exe"],
-    "slider3": ["valorant.exe","overwatch.exe"],
-    "slider4": []
-  }
-}
+{"isConfigured": true, "isBoardActive": true, "numOfSliders": 4, "COMPort": "COM5", "baudRate": 115200, "sliders": {"slider1": "main", "slider2": ["discord.exe"], "slider3": [], "slider4": []}}
