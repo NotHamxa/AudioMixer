@@ -253,6 +253,7 @@ class ConfigureSliderFrame(CTkFrame):
                     return
         self.currentApplications.append(applicationName)
         configuration.sliders[f'slider{self.index+1}'] = self.currentApplications
+        configuration.slidersIndex.update({applicationName:self.index})
         saveConfig()
         self.resetCurrentApplications(self.index)
         self.addApplicationEntry.delete(0,len(applicationName))

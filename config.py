@@ -13,6 +13,7 @@ class Configuration(BaseModel):
     COMPort: str = "COM5"
     baudRate: int = 115200
     sliders: dict = {}
+    slidersIndex:dict = {}
 
 
 def loadConfig():
