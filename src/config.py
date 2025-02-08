@@ -17,8 +17,8 @@ class Configuration(BaseModel):
 
 
 def loadConfig():
-    if os.path.exists("conf.json"):
-        with open("conf.json", 'r') as f:
+    if os.path.exists("../conf.json"):
+        with open("../conf.json", 'r') as f:
             config = json.load(f)
             configuration = Configuration(**config)
             print(configuration.model_dump())
@@ -28,7 +28,7 @@ def loadConfig():
 
 
 def saveConfig():
-    with open("conf.json", "w") as confFile:
+    with open("../conf.json", "w") as confFile:
         json.dump(configuration.model_dump(), confFile)
 
 
